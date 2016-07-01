@@ -1,0 +1,20 @@
+# Purpose: concatenate cvs files into one that can be imported to Skybox
+# takes files that have been updated in last 24 hours and are not empty
+# Licence: Open
+# Version: 20160701
+# Author: Vladimir Jirasek
+
+#Number of hours to look back
+$hours = 24
+$base_dir = "d:\Python_output\"
+$export_file = $base_dir + "final_csv\xfsl_redhat_import.csv"
+$header = "host,IP,package,version,OS`n"
+$p = "^.*,.*$"
+
+#Null the export file and add the header
+New-Item $export_file -type file -force -value $header
+
+# jumnp to the directory with csv files
+cd $base_dir 
+#take all recently updated (younger than $hours) CSV files that are bigger than 0 bytes and append them to one CSV with header
+gci *.csv | where {([datetime]::now - $_.lastwritetime).TotalHours -le $hours -and $_.length -gt 0kb} | foreach {$out = cat $_ | select-string $p;$out|add-content $export_file -Encoding ASCII }
